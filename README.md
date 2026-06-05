@@ -146,15 +146,17 @@ AI Responses
 
 ## Technologies Used
 
-| Technology | Purpose                 |
-| ---------- | ----------------------- |
-| Python     | Backend Development     |
-| Streamlit  | User Interface          |
-| Gemini API | Artificial Intelligence |
-| OCR        | Text Extraction         |
-| GitHub     | Version Control         |
-| VS Code    | Development Environment |
+#Technology
+Python, Streamlit, Gemini API, OCR, Github, VS Code
 
+#Purpose
+
+Backend Development
+User Interface 
+Artificial Intelligence
+Text Extraction
+Version Control
+Development Environment
 
 ## Installation Guide
 
@@ -173,9 +175,6 @@ Activate environment:
 
 venv\Scripts\activate
 
-**Linux / Mac**
-
-source venv/bin/activate
 
 ### Step 3: Install Dependencies
 
@@ -290,40 +289,26 @@ Vitamin D deficiency may affect bone health and immune system function.
 
 
 ## Screenshots
+
 <img width="954" height="483" alt="image" src="https://github.com/user-attachments/assets/32a4f088-3c2b-462f-84c9-483864cee902" />
+
+
 <img width="1910" height="1013" alt="image" src="https://github.com/user-attachments/assets/9c0ebf3f-810a-44a0-9d21-5a1323545764" />
 
 
-Add screenshots of your project here.
 
 ### Home Page
 
-Insert screenshot:
 
+<img width="1908" height="967" alt="image" src="https://github.com/user-attachments/assets/e4e2c737-bed0-4f39-97b2-154c507a9543" />
 
 
 ### Report Upload
 
-Insert screenshot:
+
+<img width="1792" height="945" alt="image" src="https://github.com/user-attachments/assets/25398964-6cba-4947-b866-d92c05cf7e99" />
 
 
-screenshots/report_upload.png
-
-
-### Report Analysis
-
-Insert screenshot:
-
-
-screenshots/report_analysis.png
-
-
-### Chat Interface
-
-Insert screenshot:
-
-
-screenshots/chatbot.png
 
 
 ## Future Enhancements
