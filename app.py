@@ -76,35 +76,3 @@ Medical Report:
 {user_report}
 """
 
-# Hugging Face API URL
-# API_URL = "https://router.huggingface.co/hf-inference/models/facebook/bart-large-cnn"
-
-# headers = {
-#     "Authorization": f"Bearer {API_KEY}"
-# }
-
-# payload = {
-#     "inputs": final_prompt
-# }
-
-# # Send request
-
-# response = requests.post(
-#     API_URL,
-#     headers={
-#         "Authorization": f"Bearer {API_KEY}"
-#     },
-#     json={
-#         "inputs": final_prompt
-#     }
-# )
-
-# print("\n========== AI RESPONSE ==========\n")
-
-# print("Status Code:", response.status_code)
-
-# try:
-#     result = response.json()
-#     print(result)
-# except Exception:
-#     print(response.text)

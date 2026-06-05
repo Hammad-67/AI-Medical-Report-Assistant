@@ -1,6 +1,11 @@
 import streamlit as st
-import pdfplumber
-from ai_engine import generate_ai_summary
+from ai_engine import (
+    generate_ai_summary,
+    analyze_medical_image,
+    analyze_medical_pdf,
+    medical_chatbot
+)
+
 
 # Session state for chat history
 if "messages" not in st.session_state:
@@ -8,6 +13,9 @@ if "messages" not in st.session_state:
 
 if "uploaded_report" not in st.session_state:
     st.session_state.uploaded_report = ""
+
+if "uploaded_file" not in st.session_state:
+    st.session_state.uploaded_file = None
 
 
 # Page config
@@ -129,6 +137,16 @@ with st.sidebar:
 
     st.divider()
 
+    if st.sidebar.button("🗑️ New Chat"):
+
+        st.session_state.messages = []
+
+        st.session_state.uploaded_report = ""
+
+        st.session_state.uploaded_file = None
+
+        st.rerun()
+
     st.write("Developed as AI Course Project")
 
 # ==============================
@@ -154,7 +172,7 @@ with toolbar_col1:
 
     uploaded_file = st.file_uploader(
         "📎",
-        type=["pdf"],
+        type=["pdf", "jpg", "jpeg", "png"],
         label_visibility="collapsed"
     )
 
@@ -171,28 +189,14 @@ with toolbar_col2:
 
 if uploaded_file is not None:
 
-    import pdfplumber
+    st.session_state.uploaded_file = uploaded_file
 
-    pdf_text = ""
-
-    with pdfplumber.open(uploaded_file) as pdf:
-
-        for page in pdf.pages:
-
-            text = page.extract_text()
-
-            if text:
-                pdf_text += text + "\n"
-
-    # Save report into session
-    st.session_state.uploaded_report = pdf_text
-
-    # Show upload confirmation ONLY ONCE
     if "report_uploaded" not in st.session_state:
 
         st.session_state.messages.append({
             "role": "assistant",
-            "content": "📄 Medical report uploaded successfully. You can now ask questions about your report."
+            "content":
+            "📄 Report uploaded successfully. Ask me to analyze it."
         })
 
         st.session_state.report_uploaded = True
@@ -217,21 +221,60 @@ if user_prompt:
 
         st.markdown(user_prompt)
 
-    # Build AI context
-    full_prompt = f"""
-    Uploaded Medical Report:
-    {st.session_state.uploaded_report}
+    report_keywords = [
+        "report",
+        "lab report",
+        "medical report",
+        "analyze",
+        "analyse",
+        "summarize",
+        "summary",
+        "explain",
+        "abnormal",
+        "abnormalities",
+        "blood test",
+        "cbc",
+        "attached report",
+        "uploaded report"
+    ]
 
-    User Question:
-    {user_prompt}
-    """
+    question = user_prompt.lower()
 
     # AI response
     with st.chat_message("assistant"):
 
         with st.spinner("AI is thinking..."):
 
-            ai_response = generate_ai_summary(full_prompt)
+            if any(keyword in question for keyword in report_keywords):
+
+                if st.session_state.uploaded_file is not None:
+
+                    file_type = st.session_state.uploaded_file.type
+
+                    if "image" in file_type:
+
+                        ai_response = analyze_medical_image(
+                            st.session_state.uploaded_file
+                        )
+
+                    elif "pdf" in file_type:
+
+                        ai_response = analyze_medical_pdf(
+                            st.session_state.uploaded_file
+                        )
+
+                else:
+
+                    ai_response = (
+                        "Please upload a medical report first."
+                    )
+
+            else:
+
+                ai_response = medical_chatbot(
+                    user_prompt,
+                    st.session_state.uploaded_report
+                )
 
             st.markdown(ai_response)
 

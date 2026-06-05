@@ -1,37 +1,158 @@
 import google.generativeai as genai
-import os
 import streamlit as st
+import os
+from PIL import Image
+import tempfile
 
 from dotenv import load_dotenv
 
-# Load environment variables
+# Load .env file
 load_dotenv()
 
-# Configure Gemini
-genai.configure(
-    api_key=st.secrets["GEMINI_API_KEY"]
-)
+# ==========================
+# API KEY HANDLING
+# ==========================
 
-# Load Gemini model
+try:
+    # Streamlit Cloud
+    API_KEY = st.secrets["GEMINI_API_KEY"]
+
+except Exception:
+    # Local Development
+    API_KEY = os.getenv("GEMINI_API_KEY")
+
+# Configure Gemini
+print("Loaded API Key:", API_KEY[:15])
+genai.configure(api_key=API_KEY)
+
+# Load Model
 model = genai.GenerativeModel(
     "models/gemini-2.5-flash"
 )
 
 
+def analyze_medical_image(uploaded_file):
+
+    prompt = """
+    You are an AI Medical Report Assistant.
+
+    Analyze this medical report image.
+
+    Extract important medical parameters.
+
+    Explain:
+    - Abnormal findings
+    - Normal findings
+    - Possible health implications
+
+    Use simple language.
+
+    Do not provide a final diagnosis.
+
+    Recommend consulting a doctor if necessary.
+    """
+
+    try:
+
+        image = Image.open(uploaded_file)
+
+        response = model.generate_content(
+            [prompt, image]
+        )
+
+        return response.text
+
+    except Exception as e:
+        error = str(e)
+
+        if "429" in error:
+
+            return """
+            Gemini quota exceeded.
+
+            Please wait a few minutes and try again.
+            """
+
+        return f"AI Error: {error}"
+
+
+# pdf function upload
+
+def analyze_medical_pdf(uploaded_file):
+
+    try:
+
+        prompt = """
+        You are an AI Medical Report Assistant.
+
+        Analyze this medical report PDF.
+
+        Extract:
+        - Medical parameters
+        - Test values
+        - Abnormal findings
+        - Possible health implications
+
+        Explain everything in simple language.
+
+        Do not provide a final diagnosis.
+        """
+
+        # Save uploaded PDF temporarily
+        with tempfile.NamedTemporaryFile(
+            delete=False,
+            suffix=".pdf"
+        ) as tmp:
+
+            tmp.write(uploaded_file.read())
+
+            temp_path = tmp.name
+
+        pdf_file = genai.upload_file(temp_path)
+
+        response = model.generate_content(
+            [prompt, pdf_file]
+        )
+
+        return response.text
+
+    except Exception as e:
+        error = str(e)
+
+        if "429" in error:
+
+            return """
+            Gemini quota exceeded.
+
+            Please wait a few minutes and try again.
+            """
+
+        return f"AI Error: {error}"
+
+
+# ==========================
+# REPORT ANALYSIS
+# ==========================
+
 def generate_ai_summary(report_text):
 
     prompt = f"""
-    You are an AI medical assistant.
+    You are an AI Medical Report Explanation Assistant.
 
-    Analyze the following medical laboratory report.
+    Analyze the uploaded laboratory report.
 
-    Explain abnormal findings in simple language.
+    Explain:
+    - Abnormal findings
+    - Possible health implications
+    - Important observations
+    - Recommendations
 
-    Mention possible health concerns briefly.
+    Use simple language understandable by non-medical users.
 
-    Keep response short and understandable for non-medical users.
+    Do NOT provide a final diagnosis.
 
     Medical Report:
+
     {report_text}
     """
 
@@ -42,27 +163,42 @@ def generate_ai_summary(report_text):
         return response.text
 
     except Exception as e:
+        error = str(e)
 
-        return f"AI Error: {str(e)}"
+        if "429" in error:
+
+            return """
+            Gemini quota exceeded.
+
+            Please wait a few minutes and try again.
+            """
+
+        return f"AI Error: {error}"
 
 
-def medical_chatbot(user_question, report_text):
+# ==========================
+# HEALTH CHATBOT
+# ==========================
+
+def medical_chatbot(user_question, report_text=""):
 
     prompt = f"""
-    You are an AI healthcare assistant.
+    You are an AI Healthcare Assistant.
 
-    The user already uploaded this medical report:
+    Uploaded Medical Report:
 
     {report_text}
 
     User Question:
+
     {user_question}
 
-    Answer in simple language.
-
-    Do not provide final medical diagnosis.
-
-    Encourage consulting a doctor for serious concerns.
+    Rules:
+    - Answer in simple language.
+    - Explain medical concepts clearly.
+    - If report data exists, use it.
+    - Do not provide final diagnosis.
+    - Recommend consulting a doctor for serious concerns.
     """
 
     try:
@@ -72,5 +208,14 @@ def medical_chatbot(user_question, report_text):
         return response.text
 
     except Exception as e:
+        error = str(e)
 
-        return f"AI Error: {str(e)}"
+        if "429" in error:
+
+            return """
+            Gemini quota exceeded.
+
+            Please wait a few minutes and try again.
+            """
+
+        return f"AI Error: {error}"
